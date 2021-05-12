@@ -1,15 +1,3 @@
-function shuffleArray(ary) {
-  return ary
-    .slice()
-    .map((el) => ({ el, order: Math.random() }))
-    .sort((a, b) => a.order - b.order)
-    .map((a) => a.el);
-}
-
-function gaussian(x, s) {
-  return Math.exp((-x * x) / (2 * s * s));
-}
-
 var canvas = document.getElementById('myCanvas');
 var ctx = canvas.getContext('2d');
 var ballRadius = 15;
@@ -23,7 +11,7 @@ var playerPaddleX = (canvas.width - paddleWidth) / 2;
 var rightPressed = false;
 var leftPressed = false;
 var cpuPaddleX = (canvas.width - paddleWidth) / 2;
-var sigma = 1;
+var noiseToCpuPaddleX = 0;
 var rallyLength = 0;
 
 document.addEventListener('keydown', keyDownHandler, false);
@@ -47,9 +35,15 @@ function keyUpHandler(e) {
 
 function updateCpuPaddleX() {
   cpuPaddleX = x - paddleWidth / 2;
+  updateNoiseToCpuPaddleX();
+  cpuPaddleX += (paddleWidth / 2) * noiseToCpuPaddleX;
   if (cpuPaddleX <= 0) cpuPaddleX = 0;
   if (cpuPaddleX + paddleWidth >= canvas.width)
     cpuPaddleX = canvas.width - paddleWidth;
+}
+
+function updateNoiseToCpuPaddleX() {
+  noiseToCpuPaddleX += [0.025, -0.025][Math.floor(Math.random() * 2)];
 }
 
 function drawBall() {
@@ -121,8 +115,17 @@ function draw() {
     playerPaddleX -= 7;
   }
 
-  x += dx * (1 + 0.2 * Math.min(rallyLength, 10));
-  y += dy * (1 + 0.5 * Math.min(rallyLength, 10));
+  x += dx * (1 + (3 * Math.min(rallyLength, 20)) / 20);
+  y += dy * (1 + (3 * Math.min(rallyLength, 20)) / 20);
 }
 
-var interval = setInterval(draw, 15);
+var interval = setInterval(draw, 10);
+
+// utils
+function shuffleArray(ary) {
+  return ary
+    .slice()
+    .map((el) => ({ el, order: Math.random() }))
+    .sort((a, b) => a.order - b.order)
+    .map((a) => a.el);
+}
