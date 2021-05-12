@@ -1,0 +1,8 @@
+canvas {
+  background: #eee;
+}
+
+.canvas-wrapper {
+  width: 320px;
+  margin: 0 auto;
+}
