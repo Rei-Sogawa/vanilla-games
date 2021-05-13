@@ -35,15 +35,11 @@ function keyUpHandler(e) {
 
 function updateCpuPaddleX() {
   cpuPaddleX = x - paddleWidth / 2;
-  updateNoiseToCpuPaddleX();
+  noiseToCpuPaddleX += [0.025, -0.025][randomInt(2)];
   cpuPaddleX += (paddleWidth / 2) * noiseToCpuPaddleX;
   if (cpuPaddleX <= 0) cpuPaddleX = 0;
   if (cpuPaddleX + paddleWidth >= canvas.width)
     cpuPaddleX = canvas.width - paddleWidth;
-}
-
-function updateNoiseToCpuPaddleX() {
-  noiseToCpuPaddleX += [0.025, -0.025][Math.floor(Math.random() * 2)];
 }
 
 function drawBall() {
@@ -67,6 +63,7 @@ function drawPlayerPaddle() {
 }
 function drawCpuPaddle() {
   ctx.beginPath();
+  updateCpuPaddleX();
   ctx.rect(cpuPaddleX, 0, paddleWidth, paddleHeight);
   ctx.fillStyle = '#0095DD';
   ctx.fill();
@@ -77,7 +74,6 @@ function draw() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   drawBall();
   drawPlayerPaddle();
-  updateCpuPaddleX();
   drawCpuPaddle();
 
   if (x + dx > canvas.width - ballRadius || x + dx < ballRadius) {
@@ -128,4 +124,8 @@ function shuffleArray(ary) {
     .map((el) => ({ el, order: Math.random() }))
     .sort((a, b) => a.order - b.order)
     .map((a) => a.el);
+}
+
+function randomInt(length, startAt = 0) {
+  return Math.floor(Math.random() * length) + startAt;
 }
