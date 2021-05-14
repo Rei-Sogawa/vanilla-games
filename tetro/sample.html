@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <!-- canvas -->
+    <canvas id="tetris" width="300" height="600"></canvas>
+    <script type="text/javascript">
+      (function () {
+        /* 全体のコンフィグ */
+        var CONFIG = {
+          width: 0 /* 横幅 */,
+          hegith: 0 /* 縦幅 */,
+          xsqs: 10 /* 横方眼数 */,
+          ysqs: 20 /* 縦方眼数 */,
+          color: "rgb(65,65,65)" /* 盤面の色 */,
+          grid_color: "black" /* 格子の色 */,
+          grid_width: 2 /* 格子の幅 */,
+        };
+
+        /* 方眼 */
+        var SQUARES;
+        var squre = function () {
+          this.color = 0;
+        };
+
+        /* 色リスト */
+        var COLOR = {
+          default: CONFIG.color,
+          red: "rgb(255,0,0)",
+          green: "rgb(0,255,0)",
+          blue: "rgb(0,0,255)",
+          yellow: "rgb(255,255,0)",
+          cyan: "rgb(0,255,255)",
+          magenta: "rgb(255,0,255)",
+        };
+
+        var COLOR_LIST = [
+          COLOR.red,
+          COLOR.green,
+          COLOR.blue,
+          COLOR.yellow,
+          COLOR.cyan,
+          COLOR.magenta,
+        ];
+
+        /* ブロックの定義 */
+        var BLOCK;
+        var block = function () {
+          this.color =
+            COLOR_LIST[Math.floor(Math.random() * COLOR_LIST.length)];
+          this.shape =
+            BLOCK_LIST[Math.floor(Math.random() * BLOCK_LIST.length)];
+          this.x = CONFIG.xsqs / 2 - 1;
+          this.y = 0;
+          return this;
+        };
+
+        var BLOCK_BOX = [
+          [0, 0, 0, 0],
+          [0, 1, 1, 0],
+          [0, 1, 1, 0],
+          [0, 0, 0, 0],
+        ];
+
+        var BLOCK_BAR = [
+          [1, 1, 1, 1],
+          [0, 0, 0, 0],
+          [0, 0, 0, 0],
+          [0, 0, 0, 0],
+        ];
+
+        var BLOCK_LL = [
+          [1, 1, 1, 0],
+          [1, 0, 0, 0],
+          [0, 0, 0, 0],
+          [0, 0, 0, 0],
+        ];
+
+        var BLOCK_LN = [
+          [1, 0, 0, 0],
+          [1, 1, 1, 0],
+          [0, 0, 0, 0],
+          [0, 0, 0, 0],
+        ];
+
+        var BLOCK_NL = [
+          [1, 0, 0, 0],
+          [1, 1, 0, 0],
+          [0, 1, 0, 0],
+          [0, 0, 0, 0],
+        ];
+
+        var BLOCK_NN = [
+          [0, 1, 0, 0],
+          [1, 1, 0, 0],
+          [1, 0, 0, 0],
+          [0, 0, 0, 0],
+        ];
+
+        var BLOCK_T = [
+          [1, 0, 0, 0],
+          [1, 1, 0, 0],
+          [1, 0, 0, 0],
+          [0, 0, 0, 0],
+        ];
+
+        var BLOCK_LIST = [
+          BLOCK_BOX,
+          BLOCK_BAR,
+          BLOCK_LL,
+          BLOCK_LN,
+          BLOCK_NL,
+          BLOCK_NN,
+          BLOCK_T,
+        ];
+
+        /* 描画コンテキスト */
+        var CTX;
+
+        /* タイマー */
+        var fallTimer;
+
+        /* キー入力 */
+        var KEY_DOWN = {
+          a: 65 /* left */,
+          s: 83 /* right */,
+          d: 68 /* down */,
+          f: 70 /* turn right */,
+          left: 37,
+          right: 39,
+          down: 40,
+          space: 32 /* turn right */,
+        };
+
+        /* 初期化処理 */
+        function initialize() {
+          /* canvasの取得 */
+          CTX = document.getElementById("tetris").getContext("2d");
+          if (!CTX) {
+            return false;
+          }
+
+          CONFIG.width = CTX.canvas.width;
+          CONFIG.height = CTX.canvas.height;
+
+          /* keydown event */
+          document.onkeydown = moveBlock;
+
+          /* 盤面の生成 */
+          SQUARES = createSquares(CONFIG);
+
+          /* 落下ブロックの生成 */
+          BLOCK = block();
+
+          /* テトリスの起動 */
+          drawTetris(CTX, CONFIG, SQUARES, BLOCK);
+          fallTimer = setInterval(tetris, 400, CTX, CONFIG, SQUARES, BLOCK);
+        }
+
+        /* ブロックの移動 */
+        function moveBlock() {
+          var key = event.keyCode;
+
+          switch (key) {
+            case KEY_DOWN.a:
+            case KEY_DOWN.left:
+              moveLeftBlock();
+              break;
+            case KEY_DOWN.s:
+            case KEY_DOWN.right:
+              moveRightBlock();
+              break;
+            case KEY_DOWN.f:
+            case KEY_DOWN.space:
+              turnRightBlock();
+              break;
+            case KEY_DOWN.d:
+            case KEY_DOWN.down:
+              moveDownBlock();
+              break;
+            default:
+              break;
+          }
+        }
+
+        /* 左に移動 */
+        function moveLeftBlock() {
+          var isEnabeMove = true;
+
+          for (var y = 0; y < BLOCK.shape[0].length; y++) {
+            for (var x = 0; x < BLOCK.shape.length; x++) {
+              if (BLOCK.shape[x][y] == 0) {
+                continue;
+              }
+
+              /* これ以上左に行けない */
+              if (
+                BLOCK.x + x <= 0 ||
+                SQUARES[BLOCK.x + x - 1][BLOCK.y + y].color != CONFIG.color
+              ) {
+                isEnabeMove = false;
+                break;
+              }
+            }
+          }
+
+          if (isEnabeMove) {
+            BLOCK.x--;
+          }
+        }
+
+        /* 右に移動 */
+        function moveRightBlock() {
+          isEnabeMove = true;
+
+          for (var y = 0; y < BLOCK.shape[0].length; y++) {
+            for (var x = 0; x < BLOCK.shape.length; x++) {
+              if (BLOCK.shape[x][y] != 0) {
+                /* これ以上右に行けない */
+                if (
+                  BLOCK.x + x >= CONFIG.xsqs - 1 ||
+                  SQUARES[BLOCK.x + x + 1][BLOCK.y + y].color != CONFIG.color
+                ) {
+                  isEnabeMove = false;
+                  break;
+                }
+              }
+            }
+          }
+
+          if (isEnabeMove) {
+            BLOCK.x++;
+          }
+        }
+
+        /* 下に加速 */
+        function moveDownBlock() {
+          if (!isLanded(CONFIG, SQUARES, BLOCK)) {
+            BLOCK.y++;
+          }
+        }
+
+        /* ターンできるか */
+        function isEnableToTurn(tmp) {
+          for (var x = 0; x < BLOCK.shape.length; x++) {
+            for (var y = 0; y < BLOCK.shape[0].length; y++) {
+              if (tmp[x][y] != 0) {
+                if (
+                  BLOCK.x + x < 0 ||
+                  CONFIG.xsqs <= BLOCK.x + x ||
+                  BLOCK.y + y < 0 ||
+                  CONFIG.ysqs <= BLOCK.y + y ||
+                  SQUARES[BLOCK.x + x][BLOCK.y + y].color != CONFIG.color
+                ) {
+                  return false;
+                }
+              }
+            }
+          }
+          return true;
+        }
+
+        /* ブロックの右回転 */
+        function turnRightBlock() {
+          var tmp = Array(BLOCK.shape.length);
+          for (var x = 0; x < BLOCK.shape.length; x++) {
+            tmp[x] = Array(BLOCK.shape[0].length);
+          }
+
+          for (var x = 0; x < BLOCK.shape.length; x++) {
+            for (var y = 0; y < BLOCK.shape[0].length; y++) {
+              tmp[x][y] = BLOCK.shape[y][BLOCK.shape[0].length - 1 - x];
+            }
+          }
+
+          if (isEnableToTurn(tmp)) {
+            BLOCK.shape = tmp;
+          }
+        }
+
+        /* 方眼の作成 */
+        function createSquares(c) {
+          var sqrs = new Array(c.ysqs);
+
+          for (var y = 0; y < c.ysqs; y++) {
+            sqrs[y] = new Array(c.xsqs);
+          }
+
+          for (var x = 0; x < c.xsqs; x++) {
+            for (var y = 0; y < c.ysqs; y++) {
+              sqrs[x][y] = new squre();
+              sqrs[x][y].color = c.color;
+            }
+          }
+
+          return sqrs;
+        }
+
+        /* 盤面の描画 */
+        function drawTetris(ctx, c, sqrs, blk) {
+          drawBack(ctx, c);
+          drawSquare(ctx, c, sqrs);
+          drawBlock(ctx, c, blk);
+          drawGrid(ctx, c);
+        }
+
+        /* 背景の描画 */
+        function drawBack(ctx, c) {
+          ctx.fillStyle = c.color;
+          ctx.fillRect(0, 0, c.width, c.height);
+
+          ctx.strokeStyle = c.grid_color;
+          ctx.lineWidth = c.grid_width;
+
+          ctx.beginPath();
+          ctx.stroke();
+        }
+
+        /* 格子(グリッド)の描画 */
+        function drawGrid(ctx, c) {
+          ctx.beginPath();
+
+          /* 縦のグリッド線 */
+          for (var x = c.width / c.xsqs; x < c.width; x += c.width / c.xsqs) {
+            ctx.moveTo(x, 0);
+            ctx.lineTo(x, c.height);
+          }
+
+          /* 横のグリッド線 */
+          for (
+            var y = c.height / c.ysqs;
+            y < c.height;
+            y += c.height / c.ysqs
+          ) {
+            ctx.moveTo(0, y);
+            ctx.lineTo(c.width, y);
+          }
+
+          ctx.stroke();
+        }
+
+        /* 方眼の描画 */
+        function drawSquare(ctx, c, blocks) {
+          var x_sp; /* 描画開始座標(x) */
+          var y_sp; /* 描画開始座標(y) */
+          var w; /* 横幅 */
+          var h; /* 縦幅 */
+
+          ctx.beginPath();
+          for (var x = 0; x < c.xsqs; x++) {
+            for (var y = 0; y < c.ysqs; y++) {
+              if (blocks[x][y].color == COLOR.default) {
+                continue;
+              }
+
+              w = c.width / c.xsqs;
+              h = c.height / c.ysqs;
+              x_sp = x * w;
+              y_sp = y * h;
+
+              ctx.fillStyle = blocks[x][y].color;
+              ctx.fillRect(x_sp, y_sp, w, h);
+            }
+          }
+          ctx.stroke();
+        }
+
+        /* 落下ブロックの描画 */
+        function drawBlock(ctx, c, blk) {
+          var width = c.width / c.xsqs;
+          var height = c.height / c.ysqs;
+
+          ctx.fillStyle = blk.color;
+          for (var x = 0; x < blk.shape.length; x++) {
+            for (var y = 0; y < blk.shape[0].length; y++) {
+              if (blk.shape[x][y] != 0) {
+                if (
+                  blk.x + x >= 0 &&
+                  blk.x + x <= c.xsqs &&
+                  blk.y + y >= 0 &&
+                  blk.y + y <= c.ysqs
+                ) {
+                  ctx.fillRect(
+                    (blk.x + x) * width,
+                    (blk.y + y) * height,
+                    width,
+                    height
+                  );
+                }
+              }
+            }
+          }
+        }
+
+        /* ブロックの着地 */
+        function addBlock2Board(c, squres, blk) {
+          /* 盤面に着色 */
+          for (var x = 0; x < blk.shape.length; x++) {
+            for (var y = 0; y < blk.shape[0].length; y++) {
+              if (blk.shape[x][y] == 0) {
+                continue;
+              }
+
+              if (blk.x + x <= c.xsqs && blk.y + y <= c.ysqs) {
+                squres[blk.x + x][blk.y + y].color = blk.color;
+              }
+            }
+          }
+        }
+
+        /* ブロックの落下 */
+        function isLanded(c, squres, blk) {
+          /* 着地判定 */
+          for (var x = 0; x < blk.shape.length; x++) {
+            for (var y = 0; y < blk.shape[0].length; y++) {
+              if (blk.shape[x][y] != 0) {
+                /* 地面と接触 */
+                if (blk.y + y == c.ysqs - 1) {
+                  return true;
+                }
+
+                /* 既設ブロックと接触 */
+                if (squres[blk.x + x][blk.y + y + 1].color != c.color) {
+                  return true;
+                }
+              }
+            }
+          }
+
+          /* Not着地 */
+          return false;
+        }
+
+        /* GameOverですか? */
+        function isGameOver(c, squres) {
+          for (var x = c.xsqs / 2 - 2; x < c.xsqs / 2 + 2; x++) {
+            if (squres[x][0].color != c.color) {
+              return true;
+            }
+          }
+
+          return false;
+        }
+
+        /* 行削除 */
+        function eraseLine(c, squres) {
+          for (var y = 0; y < c.ysqs; y++) {
+            /* is enable to erase ? */
+            var flag = true;
+            for (var x = 0; x < c.xsqs; x++) {
+              if (squres[x][y].color == c.color) {
+                flag = false;
+                break;
+              }
+            }
+
+            if (!flag) {
+              continue;
+            }
+
+            /* do to erase */
+            for (var x = 0; x < c.xsqs; x++) {
+              squres[x][y].color = c.color;
+            }
+
+            if (y != 0) {
+              for (var y1 = y; y1 != 0; y1--) {
+                for (var x = 0; x < c.xsqs; x++) {
+                  squres[x][y1].color = squres[x][y1 - 1].color;
+                }
+              }
+            }
+          }
+        }
+
+        /* main処理 */
+        function tetris(ctx, c, squres, blk) {
+          if (isLanded(c, squres, blk)) {
+            /* ブロックの着地 */
+            addBlock2Board(c, squres, blk);
+
+            /* 削除処理 */
+            eraseLine(c, squres);
+
+            /* Game Over ? */
+            if (isGameOver(c, squres)) {
+              drawTetris(ctx, c, squres, blk);
+              clearInterval(fallTimer);
+            } else {
+              /* 新しいブロックの生成 */
+              blk = block();
+            }
+          } else {
+            /* 落下 */
+            blk.y++;
+          }
+
+          /* 盤面の描画 */
+          drawTetris(ctx, c, squres, blk);
+        }
+
+        window.addEventListener("load", initialize, false);
+      })();
+    </script>
+    <div>a : 左に移動</div>
+    <div>s : 右に移動</div>
+    <div>d : 下に移動</div>
+    <div>f : 右に回転</div>
+  </body>
+</html>
