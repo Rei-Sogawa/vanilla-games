@@ -34,9 +34,12 @@ function keyUpHandler(e) {
 
 function updateCpuPaddleX() {
   cpuPaddleX = x - paddleWidth / 2;
-  if (cpuPaddleX <= 0) cpuPaddleX = 0;
-  if (cpuPaddleX + paddleWidth >= canvas.width)
+  if (cpuPaddleX <= 0) {
+    cpuPaddleX = 0;
+  }
+  if (cpuPaddleX + paddleWidth >= canvas.width) {
     cpuPaddleX = canvas.width - paddleWidth;
+  }
 }
 
 function drawBall() {

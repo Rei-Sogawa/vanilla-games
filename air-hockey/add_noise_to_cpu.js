@@ -35,8 +35,11 @@ function keyUpHandler(e) {
 
 function updateCpuPaddleX() {
   cpuPaddleX = x - paddleWidth / 2;
-  noiseToCpuPaddleX += [0.025, -0.025][randomInt(2)];
-  cpuPaddleX += (paddleWidth / 2) * noiseToCpuPaddleX;
+  const noiseArray = [0.025, -0.025];
+  const random0or1 = Math.floor(Math.random() * 2);
+  noiseToCpuPaddleX =
+    noiseToCpuPaddleX + (paddleWidth / 2) * noiseArray[random0or1];
+  cpuPaddleX = cpuPaddleX + noiseToCpuPaddleX;
   if (cpuPaddleX <= 0) cpuPaddleX = 0;
   if (cpuPaddleX + paddleWidth >= canvas.width)
     cpuPaddleX = canvas.width - paddleWidth;
