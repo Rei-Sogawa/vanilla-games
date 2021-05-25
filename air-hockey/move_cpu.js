@@ -1,16 +1,17 @@
 // https://developer.mozilla.org/ja/docs/Games/Tutorials/2D_Breakout_game_pure_JavaScript/Game_over のコードそのまま
 var canvas = document.getElementById("myCanvas");
 var ctx = canvas.getContext("2d");
-var ballRadius = 10;
+var ballRadius = 15;
 var x = canvas.width / 2;
 var y = canvas.height - 30;
 var dx = 2;
 var dy = -2;
 var paddleHeight = 10;
 var paddleWidth = 75;
-var paddleX = (canvas.width - paddleWidth) / 2;
+var playerPaddleX = (canvas.width - paddleWidth) / 2;
 var rightPressed = false;
 var leftPressed = false;
+var cpuPaddleX = (canvas.width - paddleWidth) / 2;
 
 document.addEventListener("keydown", keyDownHandler, false);
 document.addEventListener("keyup", keyUpHandler, false);
@@ -31,6 +32,13 @@ function keyUpHandler(e) {
   }
 }
 
+function updateCpuPaddleX() {
+  cpuPaddleX = x - paddleWidth / 2;
+  if (cpuPaddleX <= 0) cpuPaddleX = 0;
+  if (cpuPaddleX + paddleWidth >= canvas.width)
+    cpuPaddleX = canvas.width - paddleWidth;
+}
+
 function drawBall() {
   ctx.beginPath();
   ctx.arc(x, y, ballRadius, 0, Math.PI * 2);
@@ -38,9 +46,22 @@ function drawBall() {
   ctx.fill();
   ctx.closePath();
 }
-function drawPaddle() {
+function drawPlayerPaddle() {
   ctx.beginPath();
-  ctx.rect(paddleX, canvas.height - paddleHeight, paddleWidth, paddleHeight);
+  ctx.rect(
+    playerPaddleX,
+    canvas.height - paddleHeight,
+    paddleWidth,
+    paddleHeight
+  );
+  ctx.fillStyle = "#0095DD";
+  ctx.fill();
+  ctx.closePath();
+}
+function drawCpuPaddle() {
+  updateCpuPaddleX();
+  ctx.beginPath();
+  ctx.rect(cpuPaddleX, 0, paddleWidth, paddleHeight);
   ctx.fillStyle = "#0095DD";
   ctx.fill();
   ctx.closePath();
@@ -49,7 +70,8 @@ function drawPaddle() {
 function draw() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   drawBall();
-  drawPaddle();
+  drawPlayerPaddle();
+  drawCpuPaddle();
 
   if (x + dx > canvas.width - ballRadius || x + dx < ballRadius) {
     dx = -dx;
@@ -57,7 +79,10 @@ function draw() {
   if (y + dy < ballRadius) {
     dy = -dy;
   } else if (y + dy > canvas.height - ballRadius) {
-    if (x > paddleX && x < paddleX + paddleWidth) {
+    if (
+      x + ballRadius > playerPaddleX &&
+      x - ballRadius < playerPaddleX + paddleWidth
+    ) {
       dy = -dy;
     } else {
       alert("GAME OVER");
@@ -66,10 +91,10 @@ function draw() {
     }
   }
 
-  if (rightPressed && paddleX < canvas.width - paddleWidth) {
-    paddleX += 7;
-  } else if (leftPressed && paddleX > 0) {
-    paddleX -= 7;
+  if (rightPressed && playerPaddleX < canvas.width - paddleWidth) {
+    playerPaddleX += 7;
+  } else if (leftPressed && playerPaddleX > 0) {
+    playerPaddleX -= 7;
   }
 
   x += dx;
