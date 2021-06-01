@@ -1,7 +1,7 @@
 # 06/01 草プロ
 
 - nitami が追加した機能について説明をしてもらう
-- spell checker を入れる
+- vscode plugin の spell checker を入れる
 
 - 完成形をまず見る
 - ハンズオンで機能を順に追加していく
