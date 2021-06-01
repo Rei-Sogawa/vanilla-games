@@ -11,8 +11,18 @@ var paddleWidth = 75;
 var playerPaddleX = (canvas.width - paddleWidth) / 2;
 var rightPressed = false;
 var leftPressed = false;
+var topPressed = false;
 var cpuPaddleX = (canvas.width - paddleWidth) / 2;
 var noiseToCpuPaddleX = 0;
+
+var cutSound = new Audio("./cut.mp3");
+var driveSound = new Audio("./drive.mp3");
+
+var playerLives = 3;
+var cpuLives = 3;
+
+var cutEffectSizeList = [-1, 0, 1];
+var driveEffectSizeList = [0, 1];
 
 document.addEventListener("keydown", keyDownHandler, false);
 document.addEventListener("keyup", keyUpHandler, false);
@@ -22,6 +32,8 @@ function keyDownHandler(e) {
     rightPressed = true;
   } else if (e.key == "Left" || e.key == "ArrowLeft") {
     leftPressed = true;
+  } else if (e.key == "Up" || e.key == "ArrowUp") {
+    topPressed = true;
   }
 }
 
@@ -30,6 +42,8 @@ function keyUpHandler(e) {
     rightPressed = false;
   } else if (e.key == "Left" || e.key == "ArrowLeft") {
     leftPressed = false;
+  } else if (e.key == "Up" || e.key == "ArrowUp") {
+    topPressed = false;
   }
 }
 
@@ -70,11 +84,27 @@ function drawCpuPaddle() {
   ctx.closePath();
 }
 
+function drawLives() {
+  ctx.font = "16px monospace";
+  ctx.fillStyle = "#0095DD";
+  ctx.fillText("Player Lives: " + playerLives, canvas.width - 150, 20);
+  ctx.fillText("Cpu Lives:    " + cpuLives, canvas.width - 150, 40);
+}
+
+function drawBallSpeed() {
+  ctx.font = "16px monospace";
+  ctx.fillStyle = "#0095DD";
+  ctx.fillText("|dx|: " + Math.abs(dx), canvas.width - 150, 80);
+  ctx.fillText("|dy|: " + Math.abs(dy), canvas.width - 150, 100);
+}
+
 function draw() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   drawBall();
   drawPlayerPaddle();
   drawCpuPaddle();
+  drawLives();
+  drawBallSpeed();
 
   if (x + dx > canvas.width - ballRadius || x + dx < ballRadius) {
     dx = -dx;
@@ -85,10 +115,29 @@ function draw() {
       x - ballRadius < cpuPaddleX + paddleWidth
     ) {
       dy = -dy;
+
+      // cpu のカット・ドライブの処理
+      var cut = cutEffectSizeList[randomInt(cutEffectSizeList.length)];
+      var drive = driveEffectSizeList[randomInt(driveEffectSizeList.length)];
+      dx += cut;
+      dy += drive;
+
+      // cpu のカット・ドライブ時の効果音
+      if (cut !== 0) {
+        cutSound.play();
+      }
+      if (drive !== 0) {
+        driveSound.play();
+      }
     } else {
-      alert("YOU WIN!");
-      document.location.reload();
-      clearInterval(interval);
+      cpuLives--;
+      if (cpuLives === 0) {
+        alert("YOU WIN!");
+        document.location.reload();
+        clearInterval(interval);
+      } else {
+        dy = -dy;
+      }
     }
   } else if (y + dy > canvas.height - ballRadius) {
     if (
@@ -96,10 +145,34 @@ function draw() {
       x - ballRadius < playerPaddleX + paddleWidth
     ) {
       dy = -dy;
+
+      // カット・ドライブの処理
+      if (rightPressed) {
+        dx += 1;
+      }
+      if (leftPressed) {
+        dx -= 1;
+      }
+      if (topPressed) {
+        dy -= 1;
+      }
+
+      // カット・ドライブの効果音
+      if (rightPressed || leftPressed) {
+        cutSound.play();
+      }
+      if (topPressed) {
+        driveSound.play();
+      }
     } else {
-      alert("GAME OVER");
-      document.location.reload();
-      clearInterval(interval); // Needed for Chrome to end game
+      playerLives--;
+      if (playerLives === 0) {
+        alert("GAME OVER");
+        document.location.reload();
+        clearInterval(interval); // Needed for Chrome to end game
+      } else {
+        dy = -dy;
+      }
     }
   }
 
