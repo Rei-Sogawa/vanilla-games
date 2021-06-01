@@ -1,17 +1,21 @@
 // https://developer.mozilla.org/ja/docs/Games/Tutorials/2D_Breakout_game_pure_JavaScript/Game_over のコードそのまま
 var canvas = document.getElementById("myCanvas");
 var ctx = canvas.getContext("2d");
+
 var ballRadius = 10;
 var x = canvas.width / 2;
 var y = canvas.height - 30;
 var dx = 2;
 var dy = -2;
+
 var paddleHeight = 10;
 var paddleWidth = 75;
+
 var playerPaddleX = (canvas.width - paddleWidth) / 2;
 var rightPressed = false;
 var leftPressed = false;
 var topPressed = false;
+
 var cpuPaddleX = (canvas.width - paddleWidth) / 2;
 var noiseToCpuPaddleX = 0;
 
@@ -21,10 +25,10 @@ var driveSound = new Audio("./drive.mp3");
 var playerLives = 3;
 var cpuLives = 3;
 
-var cutEffectSizeList = [-1, 0, 1];
-var driveEffectSizeList = [0, 1];
+var cutEffectSizeList = [-1, 0, 0, 1];
+var driveEffectSizeList = [0, 0, 1];
 
-var canDisplay = true;
+var canDraw = true;
 
 document.addEventListener("keydown", keyDownHandler, false);
 document.addEventListener("keyup", keyUpHandler, false);
@@ -101,7 +105,7 @@ function drawBallSpeed() {
 }
 
 function draw() {
-  if (!canDisplay) return;
+  if (!canDraw) return;
 
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   drawBall();
@@ -140,14 +144,14 @@ function draw() {
         document.location.reload();
         clearInterval(interval);
       } else {
-        canDisplay = false;
+        canDraw = false;
         setTimeout(() => {
           x = canvas.width / 2;
           y = 30;
           dx = 2;
           dy = 2;
           playerPaddleX = (canvas.width - paddleWidth) / 2;
-          canDisplay = true;
+          canDraw = true;
         }, 1000);
       }
     }
@@ -183,7 +187,7 @@ function draw() {
         document.location.reload();
         clearInterval(interval); // Needed for Chrome to end game
       } else {
-        canDisplay = false;
+        canDraw = false;
         setTimeout(() => {
           x = canvas.width / 2;
           y = canvas.height - 30;
@@ -191,7 +195,7 @@ function draw() {
           dy = -2;
           playerPaddleX = (canvas.width - paddleWidth) / 2;
 
-          canDisplay = true;
+          canDraw = true;
         }, 1000);
       }
     }
