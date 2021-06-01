@@ -24,6 +24,8 @@ var cpuLives = 3;
 var cutEffectSizeList = [-1, 0, 1];
 var driveEffectSizeList = [0, 1];
 
+var canDisplay = true;
+
 document.addEventListener("keydown", keyDownHandler, false);
 document.addEventListener("keyup", keyUpHandler, false);
 
@@ -99,6 +101,8 @@ function drawBallSpeed() {
 }
 
 function draw() {
+  if (!canDisplay) return;
+
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   drawBall();
   drawPlayerPaddle();
@@ -136,7 +140,15 @@ function draw() {
         document.location.reload();
         clearInterval(interval);
       } else {
-        dy = -dy;
+        canDisplay = false;
+        setTimeout(() => {
+          x = canvas.width / 2;
+          y = 30;
+          dx = 2;
+          dy = 2;
+          playerPaddleX = (canvas.width - paddleWidth) / 2;
+          canDisplay = true;
+        }, 1000);
       }
     }
   } else if (y + dy > canvas.height - ballRadius) {
@@ -171,7 +183,16 @@ function draw() {
         document.location.reload();
         clearInterval(interval); // Needed for Chrome to end game
       } else {
-        dy = -dy;
+        canDisplay = false;
+        setTimeout(() => {
+          x = canvas.width / 2;
+          y = canvas.height - 30;
+          dx = 2;
+          dy = -2;
+          playerPaddleX = (canvas.width - paddleWidth) / 2;
+
+          canDisplay = true;
+        }, 1000);
       }
     }
   }
