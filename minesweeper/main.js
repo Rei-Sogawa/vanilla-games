@@ -1,21 +1,21 @@
-const grid = document.querySelector(".grid");
+const board = document.querySelector(".board");
 
 const width = 9;
 const bombAmount = 10;
 
 function createBoard() {
-  const shuffledBombArray = getShuffledBombArray();
+  const bombArray = getBombArray();
 
   for (let i = 0; i < width; i++) {
     const col = document.createElement("div");
-    col.className = "col";
+    col.classList.add("col");
 
     for (let j = 0; j < width; j++) {
       const square = document.createElement("div");
       square.classList.add("square", "hidden");
       square.id = `${i}${j}`;
 
-      const isBomb = shuffledBombArray.pop() == "bomb";
+      const isBomb = bombArray.pop() == "bomb";
       if (isBomb) {
         square.classList.add("bomb");
         const text = document.createTextNode("X");
@@ -29,7 +29,7 @@ function createBoard() {
       col.appendChild(square);
     }
 
-    grid.appendChild(col);
+    board.appendChild(col);
   }
 
   for (let i = 0; i < width; i++) {
@@ -49,12 +49,12 @@ function createBoard() {
   }
 }
 
-function getShuffledBombArray() {
+function getBombArray() {
   const onlyBombArray = new Array(bombAmount).fill("bomb");
   const onlyEmptyArray = new Array(width * width - bombAmount).fill("empty");
-  const bombArray = onlyBombArray.concat(onlyEmptyArray);
-  const shuffledBombArray = _.shuffle(bombArray);
-  return shuffledBombArray;
+  const concattedArray = onlyBombArray.concat(onlyEmptyArray);
+  const bombArray = _.shuffle(concattedArray);
+  return bombArray;
 }
 
 function getBombAmountAround(i, j) {

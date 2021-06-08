@@ -1,9 +1,4 @@
-#root {
-  width: 720px;
-  margin: 0 auto;
-}
-
-.grid {
+.board {
   width: calc(42px * 9);
   height: calc(42px * 9);
 
@@ -38,5 +33,5 @@
 }
 
 .hidden {
-  font-size: 0;
+  /* font-size: 0; */
 }
