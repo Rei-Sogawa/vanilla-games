@@ -7,7 +7,7 @@
 - 9 x 9 の board を作る
   - column を board の下に作る
   - square を column の下に作る
-    - 行列のインデックスを中に表示する (i, j)
+    - 行列のインデックスを square の中に表示する (i, j)
     - column に display: flex; を当てる
 - ランダムに bomb が入った配列を作る
   - [ "empty", "bomb", "empty", "empty", ... ]
