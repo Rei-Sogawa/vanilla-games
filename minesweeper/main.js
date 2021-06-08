@@ -12,12 +12,12 @@ function createBoard() {
 
     for (let j = 0; j < width; j++) {
       const square = document.createElement("div");
-      square.className = "square";
+      square.classList.add("square", "hidden");
       square.id = `${i}${j}`;
 
       const isBomb = shuffledBombArray.pop() == "bomb";
       if (isBomb) {
-        square.classList.add("bomb", "hidden");
+        square.classList.add("bomb");
         const text = document.createTextNode("X");
         square.appendChild(text);
       }
@@ -38,11 +38,10 @@ function createBoard() {
       const square = document.getElementById(id);
 
       const hasBombSelf = square.classList.contains("bomb");
-
       const bombAmountAround = getBombAmountAround(i, j);
 
-      if (!hasBombSelf && bombAmountAround) {
-        square.classList.add("danger", "hidden");
+      if (!hasBombSelf && bombAmountAround > 0) {
+        square.classList.add("danger");
         const text = document.createTextNode(bombAmountAround);
         square.appendChild(text);
       }
@@ -58,15 +57,19 @@ function getShuffledBombArray() {
   return shuffledBombArray;
 }
 
-function getBombAmountAround(colIdx, rowIdx) {
+function getBombAmountAround(i, j) {
   let bombAmountAround = 0;
-  for (let i = colIdx - 1; i < colIdx + 2; i++) {
-    for (let j = rowIdx - 1; j < rowIdx + 2; j++) {
-      const self = i == colIdx && j == rowIdx;
-      const neighborSquare = document.getElementById(`${i}${j}`);
-      const hasBomb =
-        neighborSquare && neighborSquare.classList.contains("bomb");
-      if (hasBomb && !self) {
+  for (let neighborI = i - 1; neighborI < i + 2; neighborI++) {
+    for (let neighborJ = j - 1; neighborJ < j + 2; neighborJ++) {
+      const isSelf = i == neighborI && j == neighborJ;
+      const neighborSquare = document.getElementById(
+        `${neighborI}${neighborJ}`
+      );
+      const hasBomb = neighborSquare
+        ? neighborSquare.classList.contains("bomb")
+        : false;
+
+      if (!isSelf && neighborSquare && hasBomb) {
         bombAmountAround += 1;
       }
     }
