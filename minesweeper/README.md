@@ -1,9 +1,13 @@
 # 06/08 草プロ
 
-## 内容
+## 目標
 
 - minesweeper の下地を作ろう！
-  - 今日の目標を共有する
+
+## 内容
+
+- フォルダー/ファイルを追加する
+  - minesweeper/index.html, main.js, style.css
 - 9 x 9 の board を作る
   - column を board の下に作る
   - square を column の下に作る

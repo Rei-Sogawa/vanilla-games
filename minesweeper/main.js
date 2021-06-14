@@ -1,46 +1,49 @@
 const board = document.querySelector(".board");
 
 const width = 9;
+const height = 9;
 const bombAmount = 10;
 
 function createBoard() {
-  const bombArray = getBombArray();
+  for (let i = 0; i < height; i++) {
+    const column = document.createElement("div");
+    column.classList.add("column");
 
-  for (let i = 0; i < width; i++) {
-    const col = document.createElement("div");
-    col.classList.add("col");
+    board.appendChild(column);
 
     for (let j = 0; j < width; j++) {
       const square = document.createElement("div");
       square.classList.add("square", "hidden");
-      square.id = `${i}${j}`;
+      square.id = `${i}-${j}`;
+      square.addEventListener("click", function () {
+        click(i, j);
+      });
 
-      const isBomb = bombArray.pop() == "bomb";
-      if (isBomb) {
+      column.appendChild(square);
+    }
+  }
+}
+
+function setBomb() {
+  const bombArray = getBombArray();
+  for (let i = 0; i < height; i++) {
+    for (let j = 0; j < width; j++) {
+      if (bombArray.pop() == "bomb") {
+        const square = document.getElementById(`${i}-${j}`);
         square.classList.add("bomb");
         const text = document.createTextNode("X");
         square.appendChild(text);
       }
-
-      square.addEventListener("click", function (_e) {
-        click(square);
-      });
-
-      col.appendChild(square);
     }
-
-    board.appendChild(col);
   }
+}
 
-  for (let i = 0; i < width; i++) {
+function setBombAmountAround() {
+  for (let i = 0; i < height; i++) {
     for (let j = 0; j < width; j++) {
-      const id = `${i}${j}`;
-      const square = document.getElementById(id);
-
-      const hasBombSelf = square.classList.contains("bomb");
+      const square = document.getElementById(`${i}-${j}`);
       const bombAmountAround = getBombAmountAround(i, j);
-
-      if (!hasBombSelf && bombAmountAround > 0) {
+      if (!square.classList.contains("bomb") && bombAmountAround > 0) {
         square.classList.add("danger");
         const text = document.createTextNode(bombAmountAround);
         square.appendChild(text);
@@ -51,7 +54,7 @@ function createBoard() {
 
 function getBombArray() {
   const onlyBombArray = new Array(bombAmount).fill("bomb");
-  const onlyEmptyArray = new Array(width * width - bombAmount).fill("empty");
+  const onlyEmptyArray = new Array(width * height - bombAmount).fill("empty");
   const concattedArray = onlyBombArray.concat(onlyEmptyArray);
   const bombArray = _.shuffle(concattedArray);
   return bombArray;
@@ -63,13 +66,13 @@ function getBombAmountAround(i, j) {
     for (let neighborJ = j - 1; neighborJ < j + 2; neighborJ++) {
       const isSelf = i == neighborI && j == neighborJ;
       const neighborSquare = document.getElementById(
-        `${neighborI}${neighborJ}`
+        `${neighborI}-${neighborJ}`
       );
-      const hasBomb = neighborSquare
-        ? neighborSquare.classList.contains("bomb")
-        : false;
-
-      if (!isSelf && neighborSquare && hasBomb) {
+      if (
+        !isSelf &&
+        neighborSquare &&
+        neighborSquare.classList.contains("bomb")
+      ) {
         bombAmountAround += 1;
       }
     }
@@ -77,18 +80,51 @@ function getBombAmountAround(i, j) {
   return bombAmountAround;
 }
 
-function click(square) {
-  const i = Number(square.id[0]);
-  const j = Number(square.id[1]);
-  const hasBomb = square.classList.contains("bomb");
-
-  if (hasBomb) {
+function click(i, j) {
+  const square = document.getElementById(`${i}-${j}`);
+  if (square.classList.contains("bomb")) {
     window.alert("BOMB!");
+    openAll();
+    return;
+  }
+  sweep(i, j);
+}
+
+function sweep(i, j) {
+  const square = document.getElementById(`${i}-${j}`);
+  if (square.classList.contains("open")) {
+    return;
+  }
+  square.classList.remove("hidden");
+  square.classList.add("open");
+  if (square.classList.contains("danger")) {
+    return;
+  }
+  for (let neighborI = i - 1; neighborI < i + 2; neighborI++) {
+    for (let neighborJ = j - 1; neighborJ < j + 2; neighborJ++) {
+      const isSelf = i == neighborI && j == neighborJ;
+      const neighborSquare = document.getElementById(
+        `${neighborI}-${neighborJ}`
+      );
+      if (!isSelf && neighborSquare) {
+        sweep(neighborI, neighborJ);
+      }
+    }
+  }
+}
+
+function openAll() {
+  const squares = document.getElementsByClassName("square");
+  for (const square of squares) {
+    square.classList.remove("hide");
+    square.classList.add("open");
   }
 }
 
 function main() {
   createBoard();
+  setBomb();
+  setBombAmountAround();
 }
 
 main();
