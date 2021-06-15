@@ -18,7 +18,6 @@ function createBoard() {
       square.addEventListener("click", function () {
         click(i, j);
       });
-
       column.appendChild(square);
     }
   }
@@ -38,7 +37,7 @@ function setBomb() {
   }
 }
 
-function setBombAmountAround() {
+function setBombAmount() {
   for (let i = 0; i < height; i++) {
     for (let j = 0; j < width; j++) {
       const square = document.getElementById(`${i}-${j}`);
@@ -124,7 +123,7 @@ function openAll() {
 function main() {
   createBoard();
   setBomb();
-  setBombAmountAround();
+  setBombAmount();
 }
 
 main();
