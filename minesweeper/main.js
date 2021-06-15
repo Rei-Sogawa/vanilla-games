@@ -92,7 +92,7 @@ function click(i, j) {
 
 function sweep(i, j) {
   const square = document.getElementById(`${i}-${j}`);
-  if (square.classList.contains("open")) {
+  if (!square || square.classList.contains("open")) {
     return;
   }
   square.classList.remove("hidden");
