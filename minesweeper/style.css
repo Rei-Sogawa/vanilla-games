@@ -1,4 +1,4 @@
-.board {
+#board {
   width: calc(42px * 9);
   height: calc(42px * 9);
 

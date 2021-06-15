@@ -1,4 +1,4 @@
-const board = document.querySelector(".board");
+const board = document.getElementById("board");
 
 const width = 9;
 const height = 9;
