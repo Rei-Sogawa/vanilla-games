@@ -128,3 +128,12 @@ function main() {
 }
 
 main();
+
+// 再起関数の例
+function fn(n) {
+  if (n > 10) {
+    return;
+  }
+  console.log(n);
+  fn(n + 1);
+}
