@@ -5,6 +5,7 @@ const height = 9;
 const bombAmount = 10;
 
 let initialized = false;
+let finished = false;
 
 function createBoard() {
   for (let i = 0; i < height; i++) {
@@ -100,13 +101,28 @@ function handleClick(i, j) {
 }
 
 function click(i, j) {
+  if (finished) {
+    return;
+  }
+
   const square = document.getElementById(`${i}-${j}`);
   if (square.classList.contains("bomb")) {
     window.alert("BOMB!");
     openAll();
+    finished = true;
     return;
   }
   sweep(i, j);
+
+  if (
+    document.getElementsByClassName("hidden").length ==
+    document.getElementsByClassName("bomb").length
+  ) {
+    window.alert("CLEAR!");
+    openAll();
+    finished = true;
+    return;
+  }
 }
 
 function firstClick(i, j) {
