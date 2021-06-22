@@ -157,10 +157,8 @@ function sweep(i, j) {
 function openAll() {
   const squares = document.getElementsByClassName("square");
   for (const square of squares) {
-    if (square.classList.contains("hidden")) {
-      square.classList.remove("hidden");
-      square.classList.add("open");
-    }
+    square.classList.remove("hidden");
+    square.classList.add("open");
   }
 }
 
