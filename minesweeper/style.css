@@ -38,3 +38,8 @@
 .open {
   background-color: lightgray;
 }
+
+.flag::before {
+  content: "🚩";
+  font-size: 2rem;
+}

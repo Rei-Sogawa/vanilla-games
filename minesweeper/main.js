@@ -155,24 +155,34 @@ function sweep(i, j) {
 }
 
 function openAll() {
-  const squares = document.getElementsByClassName("square");
+  const squares = Array.from(document.getElementsByClassName("square"));
   for (const square of squares) {
-    square.classList.remove("hidden");
+    square.classList.remove("hidden", "flag");
     square.classList.add("open");
   }
 }
 
+function createContextMenu() {
+  $.contextMenu({
+    selector: ".square",
+    callback: function (key, options) {
+      const square = options.$trigger[0];
+      if (key == "addFlag") {
+        square.classList.add("flag");
+      } else if (key == "removeFlag") {
+        square.classList.remove("flag");
+      }
+    },
+    items: {
+      addFlag: { name: "フラグを立てる" },
+      removeFlag: { name: "フラグを回収する" },
+    },
+  });
+}
+
 function main() {
   createBoard();
+  createContextMenu();
 }
 
 main();
-
-// 再起関数の例
-function fn(n) {
-  if (n > 10) {
-    return;
-  }
-  console.log(n);
-  fn(n + 1);
-}
