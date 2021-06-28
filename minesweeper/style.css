@@ -22,8 +22,6 @@
   display: flex;
   justify-content: center;
   align-items: center;
-
-  cursor: pointer;
 }
 
 .bomb {
@@ -33,7 +31,8 @@
 }
 
 .hidden {
-  /* font-size: 0; */
+  font-size: 0;
+  cursor: pointer;
 }
 
 .open {
