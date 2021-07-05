@@ -12,16 +12,32 @@
       crossorigin="anonymous"
       referrerpolicy="no-referrer"
     ></script>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-contextmenu/2.7.1/jquery.contextMenu.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-contextmenu/2.7.1/jquery.ui.position.js"></script>
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/jquery-contextmenu/2.7.1/jquery.contextMenu.min.css"
     />
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-contextmenu/2.7.1/jquery.contextMenu.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-contextmenu/2.7.1/jquery.ui.position.js"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-modal/0.9.1/jquery.modal.min.js"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/jquery-modal/0.9.1/jquery.modal.min.css"
+    />
   </head>
   <body>
-    <div id="board"></div>
+    <div id="select-level-buttons">
+      <button id="beginner">初級</button>
+      <button id="intermediate">中級</button>
+      <button id="advanced">上級</button>
+    </div>
+    <div id="game-board" class="hidden">
+      <div id="board"></div>
+      <div>Time : <span id="timer">0 s</span></div>
+    </div>
     <script src="./main.js"></script>
   </body>
 </html>

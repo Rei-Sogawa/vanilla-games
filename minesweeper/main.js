@@ -1,11 +1,13 @@
 const board = document.getElementById("board");
 
-const width = 9;
-const height = 9;
-const bombAmount = 10;
+let width;
+let height;
+let bombAmount;
 
 let initialized = false;
 let finished = false;
+
+let timer;
 
 function createBoard() {
   for (let i = 0; i < height; i++) {
@@ -109,6 +111,7 @@ function click(i, j) {
   if (square.classList.contains("bomb")) {
     window.alert("BOMB!");
     openAll();
+    clearInterval(timer);
     finished = true;
     return;
   }
@@ -120,6 +123,7 @@ function click(i, j) {
   ) {
     window.alert("CLEAR!");
     openAll();
+    clearInterval(timer);
     finished = true;
     return;
   }
@@ -130,6 +134,7 @@ function firstClick(i, j) {
   setBomb();
   setBombAmount();
   sweep(i, j);
+  startTimer();
   initialized = true;
 }
 
@@ -180,9 +185,53 @@ function createContextMenu() {
   });
 }
 
+function startTimer() {
+  const startTimestamp = new Date().getTime();
+  timer = setInterval(function () {
+    const currentTimestamp = new Date().getTime();
+    const time = Math.floor((currentTimestamp - startTimestamp) / 1000);
+    document.getElementById("timer").innerText = `${time} s`;
+  }, 1000);
+}
+
 function main() {
   createBoard();
   createContextMenu();
 }
 
-main();
+function setSelectLevelHandler() {
+  const buttons = document.getElementById("select-level-buttons");
+  const gameBoard = document.getElementById("game-board");
+
+  document.getElementById("beginner").addEventListener("click", function () {
+    width = 9;
+    height = 9;
+    bombAmount = 10;
+
+    main();
+    gameBoard.classList.remove("hidden");
+    buttons.remove();
+  });
+
+  document.getElementById("intermediate").addEventListener("click", function () {
+    width = 16;
+    height = 16;
+    bombAmount = 40;
+
+    main();
+    gameBoard.classList.remove("hidden");
+    buttons.remove();
+  });
+
+  document.getElementById("advanced").addEventListener("click", function () {
+    width = 30;
+    height = 16;
+    bombAmount = 99;
+
+    main();
+    gameBoard.classList.remove("hidden");
+    buttons.remove();
+  });
+}
+
+setSelectLevelHandler();

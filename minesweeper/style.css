@@ -1,10 +1,10 @@
 #board {
-  width: calc(42px * 9);
+  /* width: calc(42px * 9);
   height: calc(42px * 9);
 
   border-style: solid;
   border-width: 1px;
-  border-color: black;
+  border-color: black; */
 }
 
 .column {
