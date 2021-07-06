@@ -9,6 +9,9 @@ let finished = false;
 
 let timer;
 
+const clearAudio = new Audio("./clear.mp3");
+const bombAudio = new Audio("./bomb.mp3");
+
 function createBoard() {
   for (let i = 0; i < height; i++) {
     const column = document.createElement("div");
@@ -38,8 +41,6 @@ function setBomb() {
       } else {
         if (bombArray.pop() == "bomb") {
           square.classList.add("bomb");
-          const text = document.createTextNode("X");
-          square.appendChild(text);
         }
       }
     }
@@ -110,6 +111,7 @@ function click(i, j) {
   const square = document.getElementById(`${i}-${j}`);
   if (square.classList.contains("bomb")) {
     window.alert("BOMB!");
+    bombAudio.play();
     openAll();
     clearInterval(timer);
     finished = true;
@@ -122,7 +124,11 @@ function click(i, j) {
     document.getElementsByClassName("bomb").length
   ) {
     window.alert("CLEAR!");
+    clearAudio.play();
     openAll();
+    setTimeout(function () {
+      replaceBombWithFlower();
+    }, 1000);
     clearInterval(timer);
     finished = true;
     return;
@@ -194,44 +200,39 @@ function startTimer() {
   }, 1000);
 }
 
-function main() {
-  createBoard();
-  createContextMenu();
+function replaceBombWithFlower() {
+  const bombSquares = Array.from(document.getElementsByClassName("bomb"));
+  for (const square of bombSquares) {
+    square.classList.remove("bomb");
+    square.classList.add("flower");
+  }
 }
 
-function setSelectLevelHandler() {
-  const buttons = document.getElementById("select-level-buttons");
-  const gameBoard = document.getElementById("game-board");
-
-  document.getElementById("beginner").addEventListener("click", function () {
-    width = 9;
-    height = 9;
-    bombAmount = 10;
-
-    main();
-    gameBoard.classList.remove("hidden");
-    buttons.remove();
-  });
-
-  document.getElementById("intermediate").addEventListener("click", function () {
-    width = 16;
-    height = 16;
-    bombAmount = 40;
-
-    main();
-    gameBoard.classList.remove("hidden");
-    buttons.remove();
-  });
-
-  document.getElementById("advanced").addEventListener("click", function () {
-    width = 30;
-    height = 16;
-    bombAmount = 99;
-
-    main();
-    gameBoard.classList.remove("hidden");
-    buttons.remove();
-  });
-}
-
-setSelectLevelHandler();
+document.getElementById("select-level-buttons").addEventListener(
+  "click",
+  function (e) {
+    const level = e.target.id;
+    switch (level) {
+      case "beginner": {
+        width = 9;
+        height = 9;
+        bombAmount = 10;
+        break;
+      }
+      case "intermediate": {
+        width = 16;
+        height = 16;
+        bombAmount = 40;
+        break;
+      }
+      case "advanced": {
+        width = 30;
+        height = 16;
+        bombAmount = 99;
+      }
+    }
+    createBoard();
+    createContextMenu();
+  },
+  { once: true }
+);
