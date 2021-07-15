@@ -12,7 +12,7 @@ const canvasWidth = 720;
 const canvasHeight = 480;
 
 const courseDiffTotalCount = 100 * 100;
-const courseDiffCountToFillCanvas = 50;
+const courseDiffCountToFillCanvas = 200;
 const courseDiffWidth = canvasWidth / courseDiffCountToFillCanvas;
 
 /**
@@ -33,10 +33,12 @@ function fillRectOnGround(x, w, h) {
 
 function setCourse() {
   let h = 100;
+  let prevHDiff = 0;
   for (let i = 0; i < courseDiffTotalCount; i++) {
-    const hDiff = Math.random() > 0.5 ? 5 : -5;
-    if (h + hDiff > canvasHeight / 10 && h + hDiff < canvasHeight / 2) {
+    const hDiff = [-5, 0, 5][randomInt(0, 2)];
+    if (h + hDiff > canvasHeight / 10 && h + hDiff < canvasHeight / 2 && prevHDiff * hDiff >= 0) {
       h += hDiff;
+      prevHDiff = hDiff;
     }
     courseDiffs.push({ h });
   }
@@ -53,10 +55,20 @@ setInterval(function () {
     const { h } = courseDiffs[idx];
     fillRectOnGround(courseDiffWidth * j, courseDiffWidth, h);
   }
+  drawPlayer(0, canvasHeight - courseDiffs[i].h - 10, 10);
   i++;
 }, 50);
 
-function randomInt(start, end) {
-  const size = end - start + 1;
-  return Math.floor(Math.random() * size) + start;
+function randomInt(min, max) {
+  const size = max - min + 1;
+  return Math.floor(Math.random() * size) + min;
+}
+
+function drawPlayer(x, y, size) {
+  const circle = new Path2D();
+  circle.arc(x, y, size, 0, 2 * Math.PI);
+  const fillStyle = ctx.fillStyle;
+  ctx.fillStyle = "blue";
+  ctx.fill(circle);
+  ctx.fillStyle = fillStyle;
 }
