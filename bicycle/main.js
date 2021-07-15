@@ -35,7 +35,7 @@ function setCourse() {
   let h = 100;
   let prevHDiff = 0;
   for (let i = 0; i < courseDiffTotalCount; i++) {
-    const hDiff = [-5, 0, 5][randomInt(0, 2)];
+    const hDiff = [-5, -5, -5, 0, 5, 5, 5][randomInt(0, 6)];
     if (h + hDiff > canvasHeight / 10 && h + hDiff < canvasHeight / 2 && prevHDiff * hDiff >= 0) {
       h += hDiff;
       prevHDiff = hDiff;
