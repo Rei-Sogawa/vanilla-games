@@ -11,8 +11,20 @@ const ctx = canvas.getContext("2d");
 const canvasWidth = 720;
 const canvasHeight = 480;
 
-const courseBlockCountToFillCanvas = 100;
-const courseBlockWidth = canvasWidth / courseBlockCountToFillCanvas;
+const canvasDivisionLength = 100;
+const canvasDivisionWidth = canvasWidth / canvasDivisionLength;
+
+let course;
+let courseIndex = 0;
+const courseLaps = 100;
+const courseMaxHeight = 300;
+const courseMinHeight = 50;
+const courseDiffHeight = 5;
+
+const playerIndexInCanvas = 20;
+const playerX = canvasDivisionWidth * playerIndexInCanvas + canvasDivisionWidth / 2;
+let playerY = canvasHeight;
+const dy = 20;
 
 function setCanvasSize() {
   canvasWrapper.style.width = `${canvasWidth}px`;
@@ -20,7 +32,7 @@ function setCanvasSize() {
   canvas.height = canvasHeight;
 }
 
-function drawRect(x, w, h) {
+function drawRectOnGround(x, w, h) {
   const y = canvasHeight - h;
   ctx.fillRect(x, y, w, h);
 }
@@ -34,17 +46,12 @@ function drawPlayer(x, y, radius) {
   ctx.fillStyle = prevFillStyle;
 }
 
-function createCourseBlocks() {
-  const maxHeight = 300;
-  const minHeight = 50;
-  const diffHeight = 5;
-  const laps = 100;
+function createCourse() {
+  let h = courseMinHeight + courseDiffHeight * 10;
+  let dh = [-courseDiffHeight, 0, courseDiffHeight][randomInt(0, 2)];
+  const course = [h + dh];
 
-  let h = minHeight + diffHeight * 10;
-  let dh = [-diffHeight, 0, diffHeight][randomInt(0, 2)];
-  const res = [h + dh];
-
-  for (let i = 1; i < laps * courseBlockCountToFillCanvas; i++) {
+  for (let i = 1; i < courseLaps * canvasDivisionLength; i++) {
     // if (typeof res[i - 1] === "number") {
     //   if (randomInt(0, 99) < 5) {
     //     res.push(undefined);
@@ -57,23 +64,23 @@ function createCourseBlocks() {
     //   }
     // }
 
-    if (h > maxHeight || h < minHeight) {
-      dh = h > maxHeight ? -diffHeight : diffHeight;
+    if (h > courseMaxHeight || h < courseMinHeight) {
+      dh = h > courseMaxHeight ? -courseDiffHeight : courseDiffHeight;
       h += dh;
-      res.push(h);
+      course.push(h);
       continue;
     }
 
     if (dh === 0) {
-      dh = [-diffHeight, 0, diffHeight][randomInt(0, 2)];
+      dh = [-courseDiffHeight, 0, courseDiffHeight][randomInt(0, 2)];
     } else {
       dh = [dh, dh, dh, dh, 0][randomInt(0, 4)];
     }
     h += dh;
-    res.push(h);
+    course.push(h);
   }
 
-  return res;
+  return course;
 }
 
 function randomInt(min, max) {
@@ -84,22 +91,16 @@ function randomInt(min, max) {
 // main
 setCanvasSize();
 
-const courseBlocks = createCourseBlocks();
-let coursePositionIndex = 0;
-const playerPositionByBlockCount = 20;
-const playerX = courseBlockWidth * playerPositionByBlockCount + courseBlockWidth / 2;
-let playerY = 500;
+course = createCourse();
 
 let topPressed = false;
 document.addEventListener("keydown", keyDownHandler, false);
 document.addEventListener("keyup", keyUpHandler, false);
-
 function keyDownHandler(e) {
   if (e.key == "Up" || e.key == "ArrowUp") {
     topPressed = true;
   }
 }
-
 function keyUpHandler(e) {
   if (e.key == "Up" || e.key == "ArrowUp") {
     topPressed = false;
@@ -109,25 +110,28 @@ function keyUpHandler(e) {
 setInterval(function () {
   ctx.clearRect(0, 0, canvasWidth, canvasHeight);
 
-  for (let i = 0; i < courseBlockCountToFillCanvas; i++) {
-    const courseIndex = (coursePositionIndex + i) % courseBlocks.length;
-    drawRect(courseBlockWidth * i, courseBlockWidth, courseBlocks[courseIndex]);
+  for (let i = 0; i < canvasDivisionLength; i++) {
+    const index = (courseIndex + i) % course.length;
+    drawRectOnGround(canvasDivisionWidth * i, canvasDivisionWidth, course[index]);
   }
 
-  const blockHeight = courseBlocks[playerPositionByBlockCount + coursePositionIndex];
-  if (playerY === blockHeight || playerY === blockHeight - 5 || playerY === blockHeight + 5) {
+  const courseHeightAtPlayerIndexInCanvas = course[courseIndex + playerIndexInCanvas];
+  if (
+    playerY == courseHeightAtPlayerIndexInCanvas ||
+    playerY == courseHeightAtPlayerIndexInCanvas + courseDiffHeight ||
+    playerY == courseHeightAtPlayerIndexInCanvas - courseDiffHeight ||
+    (playerY > courseHeightAtPlayerIndexInCanvas &&
+      playerY <= courseHeightAtPlayerIndexInCanvas + dy)
+  ) {
     if (topPressed) {
-      playerY += 150;
+      playerY += dy * 10;
     } else {
-      playerY = blockHeight;
+      playerY = course[courseIndex + playerIndexInCanvas];
     }
   } else {
-    playerY -= 10;
+    playerY -= dy;
   }
   drawPlayer(playerX, playerY, 10);
 
-  coursePositionIndex++;
+  courseIndex++;
 }, 50);
-
-// courseの最大・最小値とjump時と下降時の差分をキリのいい数字にする
-// 当たり判定の範囲を広くする
