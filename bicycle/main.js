@@ -52,17 +52,17 @@ function createCourse() {
   const course = [h + dh];
 
   for (let i = 1; i < courseLaps * canvasDivisionLength; i++) {
-    // if (typeof res[i - 1] === "number") {
-    //   if (randomInt(0, 99) < 5) {
-    //     res.push(undefined);
-    //     continue;
-    //   }
-    // } else {
-    //   if (randomInt(0, 99) < 80) {
-    //     res.push(undefined);
-    //     continue;
-    //   }
-    // }
+    if (typeof course[i - 1] === "number") {
+      if (randomInt(0, 99) < 5) {
+        course.push(undefined);
+        continue;
+      }
+    } else {
+      if (randomInt(0, 99) < 80) {
+        course.push(undefined);
+        continue;
+      }
+    }
 
     if (h > courseMaxHeight || h < courseMinHeight) {
       dh = h > courseMaxHeight ? -courseDiffHeight : courseDiffHeight;
@@ -70,6 +70,20 @@ function createCourse() {
       course.push(h);
       continue;
     }
+
+    // if (h > courseMaxHeight) {
+    //   dh = courseDiffHeight;
+    //   h -= dh;
+    //   course.push(h);
+    //   continue;
+    // }
+
+    // if (h < courseMinHeight) {
+    //   dh = courseDiffHeight;
+    //   h += dh;
+    //   course.push(h);
+    //   continue;
+    // }
 
     if (dh === 0) {
       dh = [-courseDiffHeight, 0, courseDiffHeight][randomInt(0, 2)];
@@ -119,15 +133,18 @@ setInterval(function () {
   if (
     playerY == courseHeightAtPlayerIndexInCanvas ||
     playerY == courseHeightAtPlayerIndexInCanvas + courseDiffHeight ||
-    playerY == courseHeightAtPlayerIndexInCanvas - courseDiffHeight ||
-    (playerY > courseHeightAtPlayerIndexInCanvas &&
-      playerY <= courseHeightAtPlayerIndexInCanvas + dy)
+    playerY == courseHeightAtPlayerIndexInCanvas - courseDiffHeight
   ) {
     if (topPressed) {
       playerY += dy * 10;
     } else {
-      playerY = course[courseIndex + playerIndexInCanvas];
+      playerY = courseHeightAtPlayerIndexInCanvas;
     }
+  } else if (
+    playerY >= courseHeightAtPlayerIndexInCanvas - dy / 2 &&
+    playerY <= courseHeightAtPlayerIndexInCanvas + dy / 2
+  ) {
+    playerY = courseHeightAtPlayerIndexInCanvas;
   } else {
     playerY -= dy;
   }
