@@ -16,7 +16,7 @@ const canvasDivisionWidth = canvasWidth / canvasDivisionLength;
 
 let course;
 let courseIndex = 0;
-const courseLaps = 1;
+const courseLaps = 10;
 const courseMaxHeight = 300;
 const courseMinHeight = 50;
 const courseDiffHeight = 5;
@@ -24,7 +24,15 @@ const courseDiffHeight = 5;
 const playerIndexInCanvas = 20;
 const playerX = canvasDivisionWidth * playerIndexInCanvas + canvasDivisionWidth / 2;
 let playerY = canvasHeight;
-let dy = 20;
+let isJumping = true;
+
+function dy(time) {
+  const v0 = 30;
+  const g = 3;
+  return v0 - g * time;
+}
+const timeAtMaxHeight = 10;
+let timeAfterJump = timeAtMaxHeight;
 
 function setCanvasSize() {
   canvasWrapper.style.width = `${canvasWidth}px`;
@@ -52,14 +60,14 @@ function createCourse() {
   const course = [h + dh];
 
   for (let i = 1; i < courseLaps * canvasDivisionLength; i++) {
-    // if (typeof course[i - 1] === "number") {
+    // if (course[i - 1] > 0) {
     //   if (randomInt(0, 99) < 5) {
-    //     course.push(undefined);
+    //     course.push(0);
     //     continue;
     //   }
     // } else {
     //   if (randomInt(0, 99) < 80) {
-    //     course.push(undefined);
+    //     course.push(0);
     //     continue;
     //   }
     // }
@@ -80,6 +88,7 @@ function createCourse() {
     course.push(h);
   }
 
+  course[course.length - 1] = 0;
   return course;
 }
 
@@ -117,26 +126,34 @@ setInterval(function () {
 
   const prevPlayerY = playerY;
   let nextPlayerY;
-  const courseHeightAtPlayerIndexInCanvas =
-    course[(courseIndex + playerIndexInCanvas) % course.length];
 
-  if (prevPlayerY > courseHeightAtPlayerIndexInCanvas) {
-    if (prevPlayerY === courseHeightAtPlayerIndexInCanvas + courseDiffHeight) {
-      nextPlayerY = courseHeightAtPlayerIndexInCanvas;
-    } else if (prevPlayerY <= courseHeightAtPlayerIndexInCanvas + dy) {
-      nextPlayerY = courseHeightAtPlayerIndexInCanvas;
+  const courseHeight = course[(courseIndex + playerIndexInCanvas) % course.length];
+
+  if (isJumping) {
+    const nextPlayerYInJump = prevPlayerY + dy(timeAfterJump);
+    if (nextPlayerYInJump < courseHeight) {
+      nextPlayerY = courseHeight;
+      isJumping = false;
     } else {
-      nextPlayerY = prevPlayerY - dy;
+      nextPlayerY = nextPlayerYInJump;
+      timeAfterJump++;
     }
-  } else if (prevPlayerY === courseHeightAtPlayerIndexInCanvas) {
-    nextPlayerY = courseHeightAtPlayerIndexInCanvas;
   } else {
-    if (prevPlayerY === courseHeightAtPlayerIndexInCanvas - courseDiffHeight) {
-      nextPlayerY = courseHeightAtPlayerIndexInCanvas;
+    if (
+      prevPlayerY === courseHeight ||
+      prevPlayerY + courseDiffHeight === courseHeight ||
+      prevPlayerY - courseDiffHeight === courseHeight
+    ) {
+      if (topPressed) {
+        nextPlayerY = prevPlayerY + dy((timeAfterJump = 0));
+        timeAfterJump++;
+        isJumping = true;
+      } else {
+        nextPlayerY = courseHeight;
+      }
     }
   }
 
   drawPlayer(playerX, (playerY = nextPlayerY), 10);
-
   courseIndex++;
 }, 50);
