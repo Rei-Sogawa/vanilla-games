@@ -24,7 +24,6 @@ const courseDiffHeight = 5;
 const playerIndexInCanvas = 20;
 const playerX = canvasDivisionWidth * playerIndexInCanvas + canvasDivisionWidth / 2;
 let playerY = canvasHeight;
-let isJumping = true;
 
 function dy(time) {
   const v0 = 30;
@@ -60,17 +59,17 @@ function createCourse() {
   const course = [h + dh];
 
   for (let i = 1; i < courseLaps * canvasDivisionLength; i++) {
-    // if (course[i - 1] > 0) {
-    //   if (randomInt(0, 99) < 5) {
-    //     course.push(0);
-    //     continue;
-    //   }
-    // } else {
-    //   if (randomInt(0, 99) < 80) {
-    //     course.push(0);
-    //     continue;
-    //   }
-    // }
+    if (course[i - 1] > 0) {
+      if (randomInt(0, 99) < 5) {
+        course.push(0);
+        continue;
+      }
+    } else {
+      if (randomInt(0, 99) < 80) {
+        course.push(0);
+        continue;
+      }
+    }
 
     if (h > courseMaxHeight || h < courseMinHeight) {
       dh = h > courseMaxHeight ? -courseDiffHeight : courseDiffHeight;
@@ -127,30 +126,49 @@ setInterval(function () {
   const prevPlayerY = playerY;
   let nextPlayerY;
 
-  const courseHeight = course[(courseIndex + playerIndexInCanvas) % course.length];
+  const prevCourseHeight = course[(courseIndex + playerIndexInCanvas - 1) % course.length];
+  const nextCourseHeight = course[(courseIndex + playerIndexInCanvas) % course.length];
 
-  if (isJumping) {
-    const nextPlayerYInJump = prevPlayerY + dy(timeAfterJump);
-    if (nextPlayerYInJump < courseHeight) {
-      nextPlayerY = courseHeight;
-      isJumping = false;
+  if (
+    // ジャンプ中の場合
+    prevPlayerY > prevCourseHeight
+  ) {
+    if (prevPlayerY > nextCourseHeight) {
+      if (prevPlayerY + dy(timeAfterJump) > nextCourseHeight) {
+        nextPlayerY = prevPlayerY + dy(timeAfterJump);
+        timeAfterJump++;
+      } else {
+        nextPlayerY = nextCourseHeight;
+      }
     } else {
-      nextPlayerY = nextPlayerYInJump;
-      timeAfterJump++;
+      if (prevPlayerY + courseDiffHeight === nextCourseHeight) {
+        nextPlayerY = nextCourseHeight;
+      } else {
+        window.location.reload();
+      }
     }
-  } else {
-    if (
-      prevPlayerY === courseHeight ||
-      prevPlayerY + courseDiffHeight === courseHeight ||
-      prevPlayerY - courseDiffHeight === courseHeight
+  } else if (
+    // コース上を走っている場合
+    prevPlayerY === prevCourseHeight
+  ) {
+    if (prevPlayerY === 0) {
+      window.location.reload();
+    } else if (
+      // 連続の場合
+      prevPlayerY === nextCourseHeight ||
+      prevPlayerY + courseDiffHeight === nextCourseHeight ||
+      prevPlayerY - courseDiffHeight === nextCourseHeight
     ) {
       if (topPressed) {
         nextPlayerY = prevPlayerY + dy((timeAfterJump = 0));
         timeAfterJump++;
-        isJumping = true;
       } else {
-        nextPlayerY = courseHeight;
+        nextPlayerY = nextCourseHeight;
       }
+    } else {
+      // 連続でない場合
+      nextPlayerY = prevPlayerY + dy((timeAfterJump = timeAtMaxHeight));
+      timeAfterJump++;
     }
   }
 
