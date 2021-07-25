@@ -87,7 +87,6 @@ function createCourse() {
     course.push(h);
   }
 
-  course[course.length - 1] = 0;
   return course;
 }
 
@@ -115,7 +114,7 @@ function keyUpHandler(e) {
   }
 }
 
-setInterval(function () {
+const game = setInterval(function () {
   ctx.clearRect(0, 0, canvasWidth, canvasHeight);
 
   for (let i = 0; i < canvasDivisionLength; i++) {
@@ -129,32 +128,23 @@ setInterval(function () {
   const prevCourseHeight = course[(courseIndex + playerIndexInCanvas - 1) % course.length];
   const nextCourseHeight = course[(courseIndex + playerIndexInCanvas) % course.length];
 
-  if (
-    // ジャンプ中の場合
-    prevPlayerY > prevCourseHeight
-  ) {
-    if (prevPlayerY > nextCourseHeight) {
-      if (prevPlayerY + dy(timeAfterJump) > nextCourseHeight) {
-        nextPlayerY = prevPlayerY + dy(timeAfterJump);
-        timeAfterJump++;
-      } else {
-        nextPlayerY = nextCourseHeight;
-      }
+  if (prevPlayerY > prevCourseHeight) {
+    if (prevPlayerY + dy(timeAfterJump) > nextCourseHeight) {
+      nextPlayerY = prevPlayerY + dy(timeAfterJump);
+      timeAfterJump++;
     } else {
-      if (prevPlayerY + courseDiffHeight === nextCourseHeight) {
+      // NOTE: prevPlayerY > nextCourseHeight だと、登りのコースへの着地に失敗する場合がある
+      if (prevPlayerY >= nextCourseHeight - courseDiffHeight) {
         nextPlayerY = nextCourseHeight;
+        timeAfterJump = 0;
       } else {
-        window.location.reload();
+        clearInterval(game);
       }
     }
-  } else if (
-    // コース上を走っている場合
-    prevPlayerY === prevCourseHeight
-  ) {
+  } else if (prevPlayerY === prevCourseHeight) {
     if (prevPlayerY === 0) {
-      window.location.reload();
+      clearInterval(game);
     } else if (
-      // 連続の場合
       prevPlayerY === nextCourseHeight ||
       prevPlayerY + courseDiffHeight === nextCourseHeight ||
       prevPlayerY - courseDiffHeight === nextCourseHeight
@@ -166,7 +156,6 @@ setInterval(function () {
         nextPlayerY = nextCourseHeight;
       }
     } else {
-      // 連続でない場合
       nextPlayerY = prevPlayerY + dy((timeAfterJump = timeAtMaxHeight));
       timeAfterJump++;
     }
