@@ -16,7 +16,7 @@ const canvasDivisionWidth = canvasWidth / canvasDivisionLength;
 
 let course;
 let courseIndex = 0;
-const courseLaps = 10;
+const courseLaps = 1;
 const courseMaxHeight = 300;
 const courseMinHeight = 50;
 const courseDiffHeight = 5;
@@ -56,17 +56,17 @@ function drawPlayer(x, y, radius) {
 function createCourse() {
   let h = courseMinHeight;
   let dh = [-courseDiffHeight, 0, courseDiffHeight][randomInt(0, 2)];
-  const course = [h + dh];
+  const res = [h + dh];
 
   for (let i = 1; i < courseLaps * canvasDivisionLength; i++) {
-    if (course[i - 1] > 0) {
+    if (res[i - 1] > 0) {
       if (randomInt(0, 99) < 5) {
-        course.push(0);
+        res.push(0);
         continue;
       }
     } else {
       if (randomInt(0, 99) < 80) {
-        course.push(0);
+        res.push(0);
         continue;
       }
     }
@@ -74,7 +74,7 @@ function createCourse() {
     if (h > courseMaxHeight || h < courseMinHeight) {
       dh = h > courseMaxHeight ? -courseDiffHeight : courseDiffHeight;
       h += dh;
-      course.push(h);
+      res.push(h);
       continue;
     }
 
@@ -84,10 +84,10 @@ function createCourse() {
       dh = [dh, dh, dh, dh, 0][randomInt(0, 4)];
     }
     h += dh;
-    course.push(h);
+    res.push(h);
   }
 
-  return course;
+  return res;
 }
 
 function randomInt(min, max) {
@@ -164,3 +164,6 @@ const game = setInterval(function () {
   drawPlayer(playerX, (playerY = nextPlayerY), 10);
   courseIndex++;
 }, 50);
+
+// 2段ジャンプができるように
+// コースに崖を設ける
