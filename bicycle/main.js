@@ -16,7 +16,7 @@ const canvasDivisionWidth = canvasWidth / canvasDivisionLength;
 
 let course;
 let courseIndex = 0;
-const courseLaps = 1;
+const courseLaps = 10;
 const courseMaxHeight = 300;
 const courseMinHeight = 50;
 const courseDiffHeight = 5;
@@ -25,6 +25,8 @@ const playerIndexInCanvas = 20;
 const playerX = canvasDivisionWidth * playerIndexInCanvas + canvasDivisionWidth / 2;
 let playerY = canvasHeight;
 
+const dt = 50;
+
 function dy(time) {
   const v0 = 30;
   const g = 3;
@@ -32,6 +34,10 @@ function dy(time) {
 }
 const timeAtMaxHeight = 10;
 let timeAfterJump = timeAtMaxHeight;
+
+let jumpCount = 0;
+let isRightAfterJump = false;
+const idleTimeToJump = 11 * dt;
 
 function setCanvasSize() {
   canvasWrapper.style.width = `${canvasWidth}px`;
@@ -59,15 +65,17 @@ function createCourse() {
   const res = [h + dh];
 
   for (let i = 1; i < courseLaps * canvasDivisionLength; i++) {
-    if (res[i - 1] > 0) {
-      if (randomInt(0, 99) < 5) {
-        res.push(0);
-        continue;
-      }
-    } else {
-      if (randomInt(0, 99) < 80) {
-        res.push(0);
-        continue;
+    if (i > canvasDivisionLength) {
+      if (res[i - 1] > 0) {
+        if (randomInt(0, 99) < 5) {
+          res.push(0);
+          continue;
+        }
+      } else {
+        if (randomInt(0, 99) < 80) {
+          res.push(0);
+          continue;
+        }
       }
     }
 
@@ -93,6 +101,11 @@ function createCourse() {
 function randomInt(min, max) {
   const size = max - min + 1;
   return Math.floor(Math.random() * size) + min;
+}
+
+function drawRecord() {
+  ctx.font = "24px monospace";
+  ctx.fillText(`${courseIndex} m`, 60, 40);
 }
 
 // main
@@ -130,13 +143,26 @@ const game = setInterval(function () {
 
   if (prevPlayerY > prevCourseHeight) {
     if (prevPlayerY + dy(timeAfterJump) > nextCourseHeight) {
-      nextPlayerY = prevPlayerY + dy(timeAfterJump);
-      timeAfterJump++;
+      if (jumpCount < 2 && !isRightAfterJump && topPressed) {
+        nextPlayerY = prevPlayerY + dy((timeAfterJump = 0));
+        timeAfterJump++;
+
+        jumpCount++;
+        isRightAfterJump = true;
+        setTimeout(function () {
+          isRightAfterJump = false;
+        }, idleTimeToJump);
+      } else {
+        nextPlayerY = prevPlayerY + dy(timeAfterJump);
+        timeAfterJump++;
+      }
     } else {
       // NOTE: prevPlayerY > nextCourseHeight だと、登りのコースへの着地に失敗する場合がある
       if (prevPlayerY >= nextCourseHeight - courseDiffHeight) {
         nextPlayerY = nextCourseHeight;
         timeAfterJump = 0;
+
+        jumpCount = 0;
       } else {
         clearInterval(game);
       }
@@ -152,6 +178,12 @@ const game = setInterval(function () {
       if (topPressed) {
         nextPlayerY = prevPlayerY + dy((timeAfterJump = 0));
         timeAfterJump++;
+
+        jumpCount++;
+        isRightAfterJump = true;
+        setTimeout(function () {
+          isRightAfterJump = false;
+        }, idleTimeToJump);
       } else {
         nextPlayerY = nextCourseHeight;
       }
@@ -162,8 +194,6 @@ const game = setInterval(function () {
   }
 
   drawPlayer(playerX, (playerY = nextPlayerY), 10);
+  drawRecord();
   courseIndex++;
-}, 50);
-
-// 2段ジャンプができるように
-// コースに崖を設ける
+}, dt);
