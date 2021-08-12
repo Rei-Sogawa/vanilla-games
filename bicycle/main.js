@@ -67,7 +67,7 @@ function createCourse() {
   for (let i = 1; i < courseLaps * canvasDivisionLength; i++) {
     if (i > canvasDivisionLength) {
       if (res[i - 1] > 0) {
-        if (randomInt(0, 99) < 5) {
+        if (randomInt(0, 99) < 10) {
           res.push(0);
           continue;
         }
