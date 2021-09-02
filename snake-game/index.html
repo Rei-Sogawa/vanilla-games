@@ -1,9 +1,19 @@
-<!-- 参考: https://www.educative.io/blog/javascript-snake-game-tutorial -->
 <!DOCTYPE html>
 <html>
   <head>
     <title>Snake Game</title>
-    <link href="https://fonts.googleapis.com/css?family=Antic+Slab" rel="stylesheet" />
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.21/lodash.min.js"
+      integrity="sha512-WFN04846sdKMIP5LKNphMaWzU7YpMyCU245etK3g/2ARYbPK9Ub18eG+ljU96qKRCWh+quCY7yefSmlkQw1ANQ=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    ></script>
+  </head>
+
+  <body>
+    <div id="score">0</div>
+    <canvas id="snakeboard" width="400" height="400"></canvas>
+
     <style>
       #snakeboard {
         position: absolute;
@@ -11,11 +21,13 @@
         left: 50%;
         transform: translate(-50%, -50%);
       }
+      #score {
+        text-align: center;
+        font-size: 140px;
+      }
     </style>
-  </head>
-  <body>
-    <canvas id="snakeboard" width="400" height="400"></canvas>
   </body>
+
   <script>
     const board_border = "black";
     const board_background = "white";
@@ -30,8 +42,11 @@
       { x: 160, y: 200 },
     ];
 
+    let score = 0;
     // True if changing direction
     let changing_direction = false;
+    let foods = [];
+    const num_of_foods = 3;
     // Horizontal velocity
     let dx = 10;
     // Vertical velocity
@@ -44,17 +59,21 @@
     // Start game
     main();
 
+    gen_foods(num_of_foods);
+
     document.addEventListener("keydown", change_direction);
 
     // main function called repeatedly to keep the game running
     function main() {
       if (has_game_ended()) return;
+
       changing_direction = false;
       setTimeout(function onTick() {
         clear_board();
+        foods.forEach(drawFood);
         move_snake();
         drawSnake();
-        // Call main again
+        // Repeat
         main();
       }, 100);
     }
@@ -77,6 +96,13 @@
       snake.forEach(drawSnakePart);
     }
 
+    function drawFood(food) {
+      snakeboard_ctx.fillStyle = "lightgreen";
+      snakeboard_ctx.strokestyle = "darkgreen";
+      snakeboard_ctx.fillRect(food.x, food.y, 10, 10);
+      snakeboard_ctx.strokeRect(food.x, food.y, 10, 10);
+    }
+
     // Draw one snake part
     function drawSnakePart(snakePart) {
       // Set the colour of the snake part
@@ -94,12 +120,34 @@
       for (let i = 4; i < snake.length; i++) {
         if (snake[i].x === snake[0].x && snake[i].y === snake[0].y) return true;
       }
-
       const hitLeftWall = snake[0].x < 0;
       const hitRightWall = snake[0].x > snakeboard.width - 10;
-      const hitTopWall = snake[0].y < 0;
+      const hitToptWall = snake[0].y < 0;
       const hitBottomWall = snake[0].y > snakeboard.height - 10;
-      return hitLeftWall || hitRightWall || hitTopWall || hitBottomWall;
+      return hitLeftWall || hitRightWall || hitToptWall || hitBottomWall;
+    }
+
+    function random_food(min, max) {
+      return Math.round((Math.random() * (max - min) + min) / 10) * 10;
+    }
+
+    function gen_foods(n) {
+      while (foods.length < n) {
+        const x = random_food(0, snakeboard.width - 10);
+        const y = random_food(0, snakeboard.height - 10);
+        const duplicated = foods.some((food) => food.x === x && food.y === y);
+        if (!duplicated) foods.push({ x, y });
+      }
+
+      // if the new food location is where the snake currently is, generate a new food location
+      snake.forEach(function (part) {
+        const has_eaten = foods.some((food) => food.x === part.x && food.y === part.y);
+        if (has_eaten) {
+          foods = [];
+          gen_foods(n);
+          return;
+        }
+      });
     }
 
     function change_direction(event) {
@@ -140,7 +188,19 @@
       const head = { x: snake[0].x + dx, y: snake[0].y + dy };
       // Add the new head to the beginning of snake body
       snake.unshift(head);
-      snake.pop();
+      const has_eaten_food = foods.some((food) => food.x === snake[0].x && food.y === snake[0].y);
+      if (has_eaten_food) {
+        // Increase score
+        score += 10;
+        // Display score on screen
+        document.getElementById("score").innerHTML = score;
+        // Generate new food location
+        foods = foods.filter((food) => !(food.x === snake[0].x && food.y === snake[0].y));
+        gen_foods(num_of_foods);
+      } else {
+        // Remove the last part of snake body
+        snake.pop();
+      }
     }
   </script>
 </html>
