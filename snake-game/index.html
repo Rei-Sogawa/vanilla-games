@@ -46,7 +46,7 @@
     // True if changing direction
     let changing_direction = false;
     let foods = [];
-    const num_of_foods = 3;
+    const num_of_foods = 5;
     // Horizontal velocity
     let dx = 10;
     // Vertical velocity
@@ -70,6 +70,7 @@
       changing_direction = false;
       setTimeout(function onTick() {
         clear_board();
+        move_foods();
         foods.forEach(drawFood);
         move_snake();
         drawSnake();
@@ -136,14 +137,15 @@
         const x = random_food(0, snakeboard.width - 10);
         const y = random_food(0, snakeboard.height - 10);
         const duplicated = foods.some((food) => food.x === x && food.y === y);
-        if (!duplicated) foods.push({ x, y });
+        if (!duplicated) {
+          foods.push({ x, y, dx: [-10, 10][random_int(0, 1)], dy: [-10, 10][random_int(0, 1)] });
+        }
       }
 
       // if the new food location is where the snake currently is, generate a new food location
       snake.forEach(function (part) {
         const has_eaten = foods.some((food) => food.x === part.x && food.y === part.y);
         if (has_eaten) {
-          foods = [];
           gen_foods(n);
           return;
         }
@@ -201,6 +203,23 @@
         // Remove the last part of snake body
         snake.pop();
       }
+    }
+
+    function move_foods() {
+      foods = foods.map((food) => {
+        if (food.y + food.dy < 0 || food.y + food.dy > snakeboard.height) {
+          return { ...food, x: food.x + food.dx, y: food.y - food.dy, dy: -food.dy };
+        } else if (food.x + food.dx < 0 || food.x + food.dx > snakeboard.width) {
+          return { ...food, x: food.x - food.dx, y: food.y + food.dy, dx: -food.dx };
+        } else {
+          return { ...food, x: food.x + food.dx, y: food.y + food.dy };
+        }
+      });
+    }
+
+    function random_int(min, max) {
+      const size = max - min + 1;
+      return Math.floor(Math.random() * size) + min;
     }
   </script>
 </html>
