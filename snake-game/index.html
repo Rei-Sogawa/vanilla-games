@@ -138,18 +138,14 @@
         const y = random_food(0, snakeboard.height - 10);
         const duplicated = foods.some((food) => food.x === x && food.y === y);
         if (!duplicated) {
-          foods.push({ x, y, dx: [-10, 10][random_int(0, 1)], dy: [-10, 10][random_int(0, 1)] });
+          foods.push({
+            x,
+            y,
+            dx: [-5, 5][random_int(0, 1)],
+            dy: [-5, 5][random_int(0, 1)],
+          });
         }
       }
-
-      // if the new food location is where the snake currently is, generate a new food location
-      snake.forEach(function (part) {
-        const has_eaten = foods.some((food) => food.x === part.x && food.y === part.y);
-        if (has_eaten) {
-          gen_foods(n);
-          return;
-        }
-      });
     }
 
     function change_direction(event) {
@@ -190,14 +186,20 @@
       const head = { x: snake[0].x + dx, y: snake[0].y + dy };
       // Add the new head to the beginning of snake body
       snake.unshift(head);
-      const has_eaten_food = foods.some((food) => food.x === snake[0].x && food.y === snake[0].y);
-      if (has_eaten_food) {
+      const eaten_food = foods.find(
+        (food) =>
+          [food.x, food.x - 5, food.x + 5].includes(snake[0].x) &&
+          [food.y, food.y - 5, food.y + 5].includes(snake[0].y)
+      );
+      if (eaten_food) {
         // Increase score
         score += 10;
         // Display score on screen
         document.getElementById("score").innerHTML = score;
         // Generate new food location
-        foods = foods.filter((food) => !(food.x === snake[0].x && food.y === snake[0].y));
+        foods = foods.filter(
+          (food) => !(food.x === eaten_food.x && food.y === eaten_food.y)
+        );
         gen_foods(num_of_foods);
       } else {
         // Remove the last part of snake body
@@ -206,14 +208,66 @@
     }
 
     function move_foods() {
-      foods = foods.map((food) => {
-        if (food.y + food.dy < 0 || food.y + food.dy > snakeboard.height) {
-          return { ...food, x: food.x + food.dx, y: food.y - food.dy, dy: -food.dy };
-        } else if (food.x + food.dx < 0 || food.x + food.dx > snakeboard.width) {
-          return { ...food, x: food.x - food.dx, y: food.y + food.dy, dx: -food.dx };
-        } else {
-          return { ...food, x: food.x + food.dx, y: food.y + food.dy };
+      const nextFoodsCandidate = foods.map((food) => ({
+        ...food,
+        x: food.x + food.dx,
+        y: food.y + food.dy,
+      }));
+
+      foods = foods.map((prevFood, index) => {
+        const self = nextFoodsCandidate[index];
+        const others = nextFoodsCandidate.filter(
+          (_, nextFoodIndex) => nextFoodIndex !== index
+        );
+        const crashFoods = others.filter(
+          (other) => other.x === self.x && other.y === self.y
+        );
+
+        // リンゴ同士の衝突
+        if (crashFoods.length === 1) {
+          return {
+            x: prevFood.x + crashFoods[0].dx,
+            y: prevFood.y + crashFoods[0].dy,
+            dx: crashFoods[0].dx,
+            dy: crashFoods[0].dy,
+          };
+        } else if (crashFoods.length > 1) {
+          return {
+            x: prevFood.x - prevFood.dx,
+            y: prevFood.y - prevFood.dy,
+            dx: -prevFood.dx,
+            dy: -prevFood.dy,
+          };
         }
+
+        // 壁と衝突
+        if (
+          prevFood.y + prevFood.dy < 0 ||
+          prevFood.y + prevFood.dy > snakeboard.height - 10
+        ) {
+          return {
+            ...prevFood,
+            x: prevFood.x + prevFood.dx,
+            y: prevFood.y - prevFood.dy,
+            dy: -prevFood.dy,
+          };
+        } else if (
+          prevFood.x + prevFood.dx < 0 ||
+          prevFood.x + prevFood.dx > snakeboard.width - 10
+        ) {
+          return {
+            ...prevFood,
+            x: prevFood.x - prevFood.dx,
+            y: prevFood.y + prevFood.dy,
+            dx: -prevFood.dx,
+          };
+        }
+
+        return {
+          ...prevFood,
+          x: prevFood.x + prevFood.dx,
+          y: prevFood.y + prevFood.dy,
+        };
       });
     }
 
